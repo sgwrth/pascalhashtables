@@ -1,4 +1,4 @@
 const
   BucketInitialCapacity = 10;
-  KeyMaxLen = 255;
+  KeyMaxLen = 256;
 
