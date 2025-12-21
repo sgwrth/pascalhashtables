@@ -1,5 +1,17 @@
 program HashTables;
 
+{$I include/constants.inc}
+
+{$I include/types.inc}
+
+var
+  Table: HashTable;
+
+{$I include/proceduresandfunctions.inc}
+
 begin
-  writeln('hello world');
+  InitTable(Table);
+  Table.Buckets[1] := NewNode('foo', 42);
+  writeln(Table.Buckets[1]^.Key);
+  writeln(Table.Buckets[1]^.Value:0);
 end.
