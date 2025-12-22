@@ -12,11 +12,13 @@ type
 
   NodePtr = ^Node;
 
-  HashTableBuckets = array [BucketsLenSpan] of ^Node;
+  HashTableBuckets = array [BucketsLenSpan] of NodePtr;
 
   HashTable = record
     Buckets: HashTableBuckets;
     Length: integer;
     Capacity: integer;
   end;
+
+  HashTablePtr = ^HashTable;
 
