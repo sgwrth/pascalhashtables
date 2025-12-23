@@ -5,6 +5,7 @@ function NewNode(Key: Key; Value: integer) : NodePtr; forward;
 procedure InitNode(var Node: NodePtr; Key: Key; Value: integer); forward;
 function GetHashedKey(Key: Key) : integer; forward;
 function TargetBucket(HashedKey: integer; Capacity: integer) : integer; forward;
+function IsFinalNode(Node: NodePtr) : boolean; forward;
 procedure AppendNode(Table: HashTablePtr; Key: Key; Value: integer); forward;
 
 procedure InitTable(Table: HashTablePtr);
@@ -63,7 +64,26 @@ begin
   TargetBucket := abs(HashedKey) mod Capacity + 1;
 end;
 
-(* WIP *)
-procedure AppendNode(Table: HashTablePtr; Key: Key; Value: integer);
+function IsFinalNode(Node: NodePtr) : boolean;
 begin
+  IsFinalNode := Node^.NextNode = nil;
+end;
+
+procedure AppendNode(Table: HashTablePtr; Key: Key; Value: integer);
+var
+  Node: NodePtr;
+  BucketNumber: integer;
+  CurrentNode: NodePtr;
+begin
+  Node := NewNode(Key, Value);
+  BucketNumber := TargetBucket(Node^.HashedKey, Table^.Capacity);
+  if Table^.Buckets[BucketNumber] = nil then
+    Table^.Buckets[BucketNumber] = Node
+  else
+  begin
+    CurrentNode := Table^.Buckets[BucketNumber];
+    while IsFinalNode(CurrentNode) = false do
+      CurrentNode := CurrentNode^.NextNode;
+    CurrentNode^.NextNode := Node;
+  end;
 end;
