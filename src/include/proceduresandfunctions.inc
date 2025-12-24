@@ -69,6 +69,15 @@ begin
   IsFinalNode := Node^.NextNode = nil;
 end;
 
+(* WIP *)
+function KeyAlreadyExists(Table: HashTablePtr; Key: Key) : boolean;
+var
+  KeyFound: boolean;
+begin
+  KeyFound := false;
+  KeyAlreadyExists := KeyFound;
+end;
+
 procedure AppendNode(Table: HashTablePtr; Key: Key; Value: integer);
 var
   Node: NodePtr;
@@ -78,7 +87,7 @@ begin
   Node := NewNode(Key, Value);
   BucketNumber := TargetBucket(Node^.HashedKey, Table^.Capacity);
   if Table^.Buckets[BucketNumber] = nil then
-    Table^.Buckets[BucketNumber] = Node
+    Table^.Buckets[BucketNumber] := Node
   else
   begin
     CurrentNode := Table^.Buckets[BucketNumber];
