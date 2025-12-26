@@ -4,8 +4,10 @@ procedure InitBucket(var Bucket: NodePtr); forward;
 function NewNode(Key: Key; Value: integer) : NodePtr; forward;
 procedure InitNode(var Node: NodePtr; Key: Key; Value: integer); forward;
 function GetHashedKey(Key: Key) : integer; forward;
-function TargetBucket(HashedKey: integer; Capacity: integer) : integer; forward;
+function GetTargetBucket(HashedKey: integer; Capacity: integer) : integer; forward;
 function IsFinalNode(Node: NodePtr) : boolean; forward;
+function AreKeysEqual(Key1, Key2: Key): boolean; forward;
+function KeyAlreadyExists(Table: HashTablePtr; Key: Key) : boolean; forward;
 procedure AppendNode(Table: HashTablePtr; Key: Key; Value: integer); forward;
 
 procedure InitTable(Table: HashTablePtr);
@@ -59,9 +61,9 @@ begin
   GetHashedKey := HashedKey; 
 end;
 
-function TargetBucket(HashedKey: integer; Capacity: integer) : integer;
+function GetTargetBucket(HashedKey: integer; Capacity: integer) : integer;
 begin
-  TargetBucket := abs(HashedKey) mod Capacity + 1;
+  GetTargetBucket := abs(HashedKey) mod Capacity + 1;
 end;
 
 function IsFinalNode(Node: NodePtr) : boolean;
@@ -69,12 +71,44 @@ begin
   IsFinalNode := Node^.NextNode = nil;
 end;
 
-(* WIP *)
+function AreKeysEqual(Key1, Key2: Key): boolean;
+var
+  Index: integer;
+  KeysMatching: boolean;
+begin
+  KeysMatching := true;
+  Index := 1;
+  while (Index <= KeyMaxLen) and (KeysMatching) do
+  begin
+    if Key1[Index] <> Key2[Index] then
+      KeysMatching := false
+    else
+      Index := Index + 1;
+  end;
+  AreKeysEqual := KeysMatching;
+end;
+
 function KeyAlreadyExists(Table: HashTablePtr; Key: Key) : boolean;
 var
   KeyFound: boolean;
+  HashedKey: integer;
+  TargetBucket: integer;
+  CurrentNode: NodePtr;
 begin
   KeyFound := false;
+  HashedKey := GetHashedKey(Key);
+  TargetBucket := GetTargetBucket(HashedKey, Table^.Capacity);
+  CurrentNode := Table^.Buckets[TargetBucket];
+  while CurrentNode <> nil do
+  begin
+    if AreKeysEqual(CurrentNode^.Key, Key) then
+    begin
+      KeyFound := true;
+      CurrentNode := nil; (* Exit loop. *)
+    end
+    else
+      CurrentNode := CurrentNode^.NextNode;
+  end;
   KeyAlreadyExists := KeyFound;
 end;
 
@@ -85,7 +119,7 @@ var
   CurrentNode: NodePtr;
 begin
   Node := NewNode(Key, Value);
-  BucketNumber := TargetBucket(Node^.HashedKey, Table^.Capacity);
+  BucketNumber := GetTargetBucket(Node^.HashedKey, Table^.Capacity);
   if Table^.Buckets[BucketNumber] = nil then
     Table^.Buckets[BucketNumber] := Node
   else
