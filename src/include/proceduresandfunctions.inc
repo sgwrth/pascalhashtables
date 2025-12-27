@@ -5,9 +5,9 @@ function NewNode(Key: Key; Value: integer) : NodePtr; forward;
 procedure InitNode(var Node: NodePtr; Key: Key; Value: integer); forward;
 function GetHashedKey(Key: Key) : integer; forward;
 function GetTargetBucket(HashedKey: integer; Capacity: integer) : integer; forward;
-function IsFinalNode(Node: NodePtr) : boolean; forward;
+(* function IsFinalNode(Node: NodePtr) : boolean; forward; *)
 function AreKeysEqual(Key1, Key2: Key): boolean; forward;
-function KeyAlreadyExists(Table: HashTablePtr; Key: Key) : boolean; forward;
+function KeyAlreadyExists(Table: HashTablePtr; Bucket: integer; Key: Key) : boolean; forward;
 procedure AppendNode(Table: HashTablePtr; Key: Key; Value: integer); forward;
 
 procedure InitTable(Table: HashTablePtr);
@@ -66,10 +66,12 @@ begin
   GetTargetBucket := abs(HashedKey) mod Capacity + 1;
 end;
 
+(*
 function IsFinalNode(Node: NodePtr) : boolean;
 begin
   IsFinalNode := Node^.NextNode = nil;
 end;
+*)
 
 function AreKeysEqual(Key1, Key2: Key): boolean;
 var
@@ -88,17 +90,13 @@ begin
   AreKeysEqual := KeysMatching;
 end;
 
-function KeyAlreadyExists(Table: HashTablePtr; Key: Key) : boolean;
+function KeyAlreadyExists(Table: HashTablePtr; Bucket: integer; Key: Key) : boolean;
 var
   KeyFound: boolean;
-  HashedKey: integer;
-  TargetBucket: integer;
   CurrentNode: NodePtr;
 begin
   KeyFound := false;
-  HashedKey := GetHashedKey(Key);
-  TargetBucket := GetTargetBucket(HashedKey, Table^.Capacity);
-  CurrentNode := Table^.Buckets[TargetBucket];
+  CurrentNode := Table^.Buckets[Bucket];
   while CurrentNode <> nil do
   begin
     if AreKeysEqual(CurrentNode^.Key, Key) then
@@ -114,19 +112,22 @@ end;
 
 procedure AppendNode(Table: HashTablePtr; Key: Key; Value: integer);
 var
-  Node: NodePtr;
   BucketNumber: integer;
   CurrentNode: NodePtr;
 begin
-  Node := NewNode(Key, Value);
-  BucketNumber := GetTargetBucket(Node^.HashedKey, Table^.Capacity);
+  BucketNumber := GetTargetBucket(GetHashedKey(Key), Table^.Capacity);
   if Table^.Buckets[BucketNumber] = nil then
-    Table^.Buckets[BucketNumber] := Node
+    Table^.Buckets[BucketNumber] := NewNode(Key, Value)
   else
   begin
-    CurrentNode := Table^.Buckets[BucketNumber];
-    while IsFinalNode(CurrentNode) = false do
-      CurrentNode := CurrentNode^.NextNode;
-    CurrentNode^.NextNode := Node;
+    if not KeyAlreadyExists(Table, BucketNumber, Key) then
+    begin
+      CurrentNode := Table^.Buckets[BucketNumber];
+      while CurrentNode^.NextNode <> nil do
+        CurrentNode := CurrentNode^.NextNode;
+      CurrentNode^.NextNode := NewNode(Key, Value);
+    end
+    else
+      writeln('Key already exists.');
   end;
 end;
