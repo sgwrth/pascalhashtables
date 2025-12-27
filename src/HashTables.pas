@@ -12,8 +12,6 @@ var
 begin
   new(Table);
   InitTable(Table);
-  Table^.Buckets[1] := NewNode('foo', 42);
-  writeln(Table^.Buckets[1]^.Key);
-  writeln(Table^.Buckets[1]^.Value:0);
-  writeln(Table^.Buckets[1]^.HashedKey:0);
+  AppendNode(Table, 'foo', 42);
+  AppendNode(Table, 'foo', 42);
 end.

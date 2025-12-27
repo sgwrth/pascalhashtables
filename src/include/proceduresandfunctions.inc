@@ -5,7 +5,7 @@ function NewNode(Key: Key; Value: integer) : NodePtr; forward;
 procedure InitNode(var Node: NodePtr; Key: Key; Value: integer); forward;
 function GetHashedKey(Key: Key) : integer; forward;
 function GetTargetBucket(HashedKey: integer; Capacity: integer) : integer; forward;
-(* function IsFinalNode(Node: NodePtr) : boolean; forward; *)
+function IsFinalNode(Node: NodePtr) : boolean; forward;
 function AreKeysEqual(Key1, Key2: Key): boolean; forward;
 function KeyAlreadyExists(Table: HashTablePtr; Bucket: integer; Key: Key) : boolean; forward;
 procedure AppendNode(Table: HashTablePtr; Key: Key; Value: integer); forward;
@@ -66,12 +66,10 @@ begin
   GetTargetBucket := abs(HashedKey) mod Capacity + 1;
 end;
 
-(*
 function IsFinalNode(Node: NodePtr) : boolean;
 begin
   IsFinalNode := Node^.NextNode = nil;
 end;
-*)
 
 function AreKeysEqual(Key1, Key2: Key): boolean;
 var
@@ -123,7 +121,7 @@ begin
     if not KeyAlreadyExists(Table, BucketNumber, Key) then
     begin
       CurrentNode := Table^.Buckets[BucketNumber];
-      while CurrentNode^.NextNode <> nil do
+      while not IsFinalNode(CurrentNode) do
         CurrentNode := CurrentNode^.NextNode;
       CurrentNode^.NextNode := NewNode(Key, Value);
     end
