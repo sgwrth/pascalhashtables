@@ -18,6 +18,7 @@ type
     Buckets: HashTableBuckets;
     Length: integer;
     Capacity: integer;
+    Nodes: integer;
   end;
 
   HashTablePtr = ^HashTable;

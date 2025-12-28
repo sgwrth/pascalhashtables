@@ -8,6 +8,7 @@ function GetTargetBucket(HashedKey: integer; Capacity: integer) : integer; forwa
 function IsFinalNode(Node: NodePtr) : boolean; forward;
 function AreKeysEqual(Key1, Key2: Key): boolean; forward;
 function KeyAlreadyExists(Table: HashTablePtr; Bucket: integer; Key: Key) : boolean; forward;
+procedure IncrementNodeCounter(Table: HashTablePtr); forward;
 procedure AppendNode(Table: HashTablePtr; Key: Key; Value: integer); forward;
 
 procedure InitTable(Table: HashTablePtr);
@@ -20,6 +21,11 @@ begin
   Table^.Buckets := Buckets;
   Table^.Length := 0;
   Table^.Capacity := BucketInitialCapacity;
+end;
+
+procedure DisposeTable(Table: HashTablePtr);
+begin
+  dispose(Table);
 end;
 
 procedure InitBucket(var Bucket: NodePtr);
@@ -108,6 +114,11 @@ begin
   KeyAlreadyExists := KeyFound;
 end;
 
+procedure IncrementNodeCounter(Table: HashTablePtr);
+begin
+  Table^.Nodes := Table^.Nodes + 1;
+end;
+
 procedure AppendNode(Table: HashTablePtr; Key: Key; Value: integer);
 var
   BucketNumber: integer;
@@ -115,7 +126,10 @@ var
 begin
   BucketNumber := GetTargetBucket(GetHashedKey(Key), Table^.Capacity);
   if Table^.Buckets[BucketNumber] = nil then
-    Table^.Buckets[BucketNumber] := NewNode(Key, Value)
+    begin
+      Table^.Buckets[BucketNumber] := NewNode(Key, Value);
+      IncrementNodeCounter(Table);
+    end
   else
   begin
     if not KeyAlreadyExists(Table, BucketNumber, Key) then
@@ -124,6 +138,7 @@ begin
       while not IsFinalNode(CurrentNode) do
         CurrentNode := CurrentNode^.NextNode;
       CurrentNode^.NextNode := NewNode(Key, Value);
+      IncrementNodeCounter(Table);
     end
     else
       writeln('Key already exists.');

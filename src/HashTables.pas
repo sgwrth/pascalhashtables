@@ -14,4 +14,5 @@ begin
   InitTable(Table);
   AppendNode(Table, 'foo', 42);
   AppendNode(Table, 'foo', 42);
+  DisposeTable(Table);
 end.
