@@ -4,6 +4,7 @@ type
   Key = packed array [1..KeyMaxLen] of char;
 
   Node = record
+    PrevNode: ^Node;
     NextNode: ^Node;
     Key: Key;
     HashedKey: integer;
