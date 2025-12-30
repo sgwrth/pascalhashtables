@@ -10,6 +10,7 @@ function AreKeysEqual(Key1, Key2: Key): boolean; forward;
 function KeyExists(Table: HashTablePtr; Bucket: integer; Key: Key) : boolean; forward;
 procedure IncrementNodeCounter(Table: HashTablePtr); forward;
 procedure EchoNumberOfNodes(Table: HashTablePtr); forward;
+function NeedsResizing(Table: HashTablePtr): boolean; forward;
 procedure AppendNode(Table: HashTablePtr; Key: Key; Value: integer); forward;
 procedure UnlinkNodeForDelete(Table: HashTablePtr; TargetBucket: integer; Node: NodePtr); forward;
 procedure PrintDeletedKeyInfo(Key: Key); forward;
@@ -121,13 +122,18 @@ end;
 
 procedure IncrementNodeCounter(Table: HashTablePtr);
 begin
-  Table^.Nodes := Table^.Nodes + 1;
+  Table^.AmountOfNodes := Table^.AmountOfNodes + 1;
+end;
+
+procedure DecrementNodeCounter(Table: HashTablePtr);
+begin
+  Table^.AmountOfNodes := Table^.AmountOfNodes - 1;
 end;
 
 procedure EchoNumberOfNodes(Table: HashTablePtr);
 begin
   write('Node added.  Total nodes: ');
-  writeln(Table^.Nodes:0);
+  writeln(Table^.AmountOfNodes:0);
 end;
 
 procedure AppendNode(Table: HashTablePtr; Key: Key; Value: integer);
@@ -181,6 +187,14 @@ begin
     writeln('Key not found.')
 end;
 
+function NeedsResizing(Table: HashTablePtr): boolean;
+var
+  ExcedesThreshold: boolean;
+begin
+  ExcedesThreshold := false;
+  NeedsResizing := ExcedesThreshold;
+end;
+
 procedure DeleteNode(Table: HashTablePtr; Key: Key);
 var
   TargetBucket: integer;
@@ -201,6 +215,7 @@ begin
         KeyFound := true;
         UnlinkNodeForDelete(Table, TargetBucket, CurrentNode);
         Dispose(CurrentNode);
+        DecrementNodeCounter(Table);
         CurrentNode := nil;
         PrintDeletedKeyInfo(Key);
       end
