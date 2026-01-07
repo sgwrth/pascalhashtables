@@ -10,11 +10,12 @@ function AreKeysEqual(Key1, Key2: Key): boolean; forward;
 function KeyExists(Table: HashTablePtr; Bucket: integer; Key: Key) : boolean; forward;
 procedure IncrementNodeCounter(Table: HashTablePtr); forward;
 procedure EchoNumberOfNodes(Table: HashTablePtr); forward;
-function NeedsResizing(Table: HashTablePtr): boolean; forward;
 procedure AppendNode(Table: HashTablePtr; Key: Key; Value: integer); forward;
 procedure UnlinkNodeForDelete(Table: HashTablePtr; TargetBucket: integer; Node: NodePtr); forward;
 procedure PrintDeletedKeyInfo(Key: Key); forward;
 procedure DeleteNode(Table: HashTablePtr; Key: Key); forward;
+function GetResizeThreshold(Table: HashTablePtr) : integer; forward;
+function NeedsResizing(Table: HashTablePtr) : boolean; forward;
 
 procedure InitTable(Table: HashTablePtr);
 var
@@ -187,14 +188,6 @@ begin
     writeln('Key not found.')
 end;
 
-function NeedsResizing(Table: HashTablePtr): boolean;
-var
-  ExcedesThreshold: boolean;
-begin
-  ExcedesThreshold := false;
-  NeedsResizing := ExcedesThreshold;
-end;
-
 procedure DeleteNode(Table: HashTablePtr; Key: Key);
 var
   TargetBucket: integer;
@@ -226,3 +219,14 @@ begin
   if not KeyFound then
     PrintKeyNotFound();
 end;
+
+function GetResizeThreshold(Table: HashTablePtr) : integer;
+begin
+  GetResizeThreshold := trunc(Table^.Capacity * LoadFactor);
+end;
+
+function NeedsResizing(Table: HashTablePtr) : boolean;
+begin
+  NeedsResizing := Table^.AmountOfNodes > GetResizeThreshold(Table)
+end;
+
